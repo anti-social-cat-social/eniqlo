@@ -40,7 +40,7 @@ This service depends on `golang-migrate cli`. Install it first globally before d
    Run the project migration to get updated with the table
 
 ```
-   migrate -path database/migration -database "postgres://testing:testing@localhost:5433/testing?sslmode=disable" -verbose up
+   migrate -path database/migrations -database "postgres://testing:testing@localhost:5433/testing?sslmode=disable" -verbose up
 ```
 
 5. Run the project
