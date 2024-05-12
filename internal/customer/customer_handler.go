@@ -48,7 +48,9 @@ func (h *customerHandler) FindAll(c *gin.Context) {
 		return
 	}
 
-	response.GenerateResponse(c, http.StatusOK, response.WithMessage("Customer fetched successfully!"), response.WithData(customers))
+	res := FormatCustomersResponse(customers)
+
+	response.GenerateResponse(c, http.StatusOK, response.WithMessage("Customer fetched successfully!"), response.WithData(res))
 }
 
 func (h *customerHandler) register(ctx *gin.Context) {

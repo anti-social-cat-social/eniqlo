@@ -9,7 +9,7 @@ import (
 
 type ICustomerUsecase interface {
 	FindCustomers(query QueryParams) ([]Customer, *localError.GlobalError)
-	Register(dto CustomerRegisterDTO) (*CustomerRegisterResponse, *localError.GlobalError)
+	Register(dto CustomerRegisterDTO) (*CustomerResponse, *localError.GlobalError)
 }
 
 type customerUsecase struct {
@@ -32,7 +32,7 @@ func (uc *customerUsecase) FindCustomers(query QueryParams) ([]Customer, *localE
 }
 
 // Register implements ICustomerUsecase.
-func (u *customerUsecase) Register(dto CustomerRegisterDTO) (*CustomerRegisterResponse, *localError.GlobalError) {
+func (u *customerUsecase) Register(dto CustomerRegisterDTO) (*CustomerResponse, *localError.GlobalError) {
 	// Validate customer request first
 
 	// Check if customer with given phone is already exists
@@ -54,7 +54,7 @@ func (u *customerUsecase) Register(dto CustomerRegisterDTO) (*CustomerRegisterRe
 		return nil, err
 	}
 
-	response := CustomerRegisterResponse{
+	response := CustomerResponse{
 		UserId:      registeredCustomer.ID,
 		PhoneNumber: registeredCustomer.PhoneNumber,
 		Name:        registeredCustomer.Name,
