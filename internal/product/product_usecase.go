@@ -23,7 +23,7 @@ func NewProductUsecase(repo IProductRepository) IProductUsecase {
 }
 
 func (uc *productUsecase) FindProducts(query QueryParams) ([]Product, *localError.GlobalError) {
-	products, err := uc.repo.FindAll(query)
+	products, err := uc.repo.FindAllProduct(query)
 	if err != nil {
 		return nil, err
 	}

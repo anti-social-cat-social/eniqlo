@@ -15,7 +15,7 @@ import (
 type IProductRepository interface {
 	FindBySku(sku string) (Product, *localError.GlobalError)
 	CreateProduct(req CreateProductRequest) *localError.GlobalError
-	FindAll(params QueryParams) ([]Product, *localError.GlobalError)
+	FindAllProduct(params QueryParams) ([]Product, *localError.GlobalError)
 	FindByID(id string) (Product, *localError.GlobalError)
 	DeleteProduct(id string) *localError.GlobalError
 	FindAll(filter ProductFilter) ([]Product, *localError.GlobalError)
@@ -31,7 +31,7 @@ func NewProductRepository(db *sqlx.DB) IProductRepository {
 	}
 }
 
-func (r *productRepository) FindAll(params QueryParams) ([]Product, *localError.GlobalError) {
+func (r *productRepository) FindAllProduct(params QueryParams) ([]Product, *localError.GlobalError) {
 	products := []Product{}
 
 	query := "SELECT * FROM products"
