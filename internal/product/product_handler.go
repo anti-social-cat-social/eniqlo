@@ -26,6 +26,7 @@ func (h *productHandler) Router(r *gin.RouterGroup) {
 
 	group.POST("", h.CreateProduct)
 	group.GET("", h.FindAll)
+	group.DELETE("/:id", h.DeleteProduct)
 }
 
 func (h *productHandler) FindAll(c *gin.Context) {
@@ -41,8 +42,6 @@ func (h *productHandler) FindAll(c *gin.Context) {
 		response.GenerateResponse(c, err.Code, response.WithMessage(err.Message))
 		return
 	}
-
-	// res := FormatCustomersResponse(products)
 
 	response.GenerateResponse(c, http.StatusOK, response.WithMessage("Product fetched successfully!"), response.WithData(products))
 }
@@ -65,4 +64,18 @@ func (h *productHandler) CreateProduct(c *gin.Context) {
 	res := FormatCreateProductResponse(*product)
 
 	response.GenerateResponse(c, http.StatusCreated, response.WithMessage("Product created successfully!"), response.WithData(res))
+}
+
+func (h *productHandler) DeleteProduct(c *gin.Context) {
+	id := c.Param("id")
+
+	userId := c.MustGet("userID").(string)
+
+	if err := h.uc.DeleteProduct(id, userId); err != nil {
+		response.GenerateResponse(c, err.Code, response.WithMessage(err.Message))
+		c.Abort()
+		return
+	}
+
+	response.GenerateResponse(c, http.StatusOK, response.WithMessage("success"))
 }
