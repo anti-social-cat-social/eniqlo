@@ -7,6 +7,7 @@ import (
 
 type IProductUsecase interface {
 	CreateProduct(req CreateProductRequest) (*Product, *localError.GlobalError)
+	DeleteProduct(id string, userId string) *localError.GlobalError
 }
 
 type productUsecase struct {
@@ -44,4 +45,26 @@ func (uc *productUsecase) CreateProduct(req CreateProductRequest) (*Product, *lo
 	}
 
 	return &product, nil
+}
+
+func (uc *productUsecase) DeleteProduct(id string, userId string) *localError.GlobalError {
+	if userId == "" {
+		return localError.ErrUnauthorized("Unauthorized", nil)
+	}
+
+	product, err := uc.repo.FindByID(id)
+	if err != nil {
+		return err
+	}
+
+	if product.ID == "" {
+		return localError.ErrNotFound("Product not found", nil)
+	}
+
+	err = uc.repo.DeleteProduct(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

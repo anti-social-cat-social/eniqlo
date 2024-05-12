@@ -11,6 +11,8 @@ import (
 type IProductRepository interface {
 	FindBySku(sku string) (Product, *localError.GlobalError)
 	CreateProduct(req CreateProductRequest) *localError.GlobalError
+	FindByID(id string) (Product, *localError.GlobalError)
+	DeleteProduct(id string) *localError.GlobalError
 }
 
 type productRepository struct {
@@ -40,6 +42,27 @@ func (r *productRepository) CreateProduct(req CreateProductRequest) *localError.
 		req.Name, req.Sku, req.Category, req.ImageURL, req.Notes, req.Price, req.Stock, req.Location, req.IsAvailable)
 	if err != nil {
 		return localError.ErrInternalServer("Failed to create product", err)
+	}
+
+	return nil
+}
+
+func (r *productRepository) FindByID(id string) (Product, *localError.GlobalError) {
+	product := Product{}
+	err := r.db.Get(&product, "SELECT * FROM products WHERE id = $1", id)
+	if err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			return product, localError.ErrInternalServer("Failed to find product", err)
+		}
+	}
+
+	return product, nil
+}
+
+func (r *productRepository) DeleteProduct(id string) *localError.GlobalError {
+	_, err := r.db.Exec("DELETE FROM products WHERE id = $1", id)
+	if err != nil {
+		return localError.ErrInternalServer("Failed to delete product", err)
 	}
 
 	return nil
