@@ -1,6 +1,7 @@
 package server
 
 import (
+	"eniqlo/internal/product"
 	"eniqlo/internal/staff"
 	"eniqlo/pkg/response"
 	"net/http"
@@ -25,7 +26,12 @@ func initializeStaffHandler(db *sqlx.DB, router *gin.RouterGroup) {
 	staffUc := staff.NewStaffUsecase(staffRepo)
 	staffH := staff.NewStaffHandler(staffUc)
 
+	productRepo := product.NewProductRepository(db)
+	productUc := product.NewProductUsecase(productRepo)
+	productH := product.NewProductHandler(productUc)
+
 	staffH.Router(router)
+	productH.Router(router)
 }
 
 func NoRouteHandler(ctx *gin.Context) {

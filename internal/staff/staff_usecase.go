@@ -1,9 +1,9 @@
 package staff
 
 import (
-	localJwt "eniqlo/pkg/jwt"
 	localError "eniqlo/pkg/error"
 	"eniqlo/pkg/hasher"
+	localJwt "eniqlo/pkg/jwt"
 	"errors"
 
 	"github.com/google/uuid"
@@ -37,7 +37,7 @@ func (u *staffUsecase) Register(dto StaffRegisterDTO) (*StaffRegAndLoginResponse
 	// Map DTO to staff entity
 	// This used for storing data to database
 	staff := Staff{
-		Name:  dto.Name,
+		Name:        dto.Name,
 		PhoneNumber: dto.PhoneNumber,
 	}
 
@@ -52,7 +52,7 @@ func (u *staffUsecase) Register(dto StaffRegisterDTO) (*StaffRegAndLoginResponse
 	staff.ID = uuid.NewString()
 
 	tokenData := &localJwt.TokenData{
-		ID: staff.ID,
+		ID:   staff.ID,
 		Name: staff.Name,
 	}
 
@@ -68,9 +68,9 @@ func (u *staffUsecase) Register(dto StaffRegisterDTO) (*StaffRegAndLoginResponse
 	}
 
 	response := StaffRegAndLoginResponse{
-		UserId: registeredStaff.ID,
-		PhoneNumber: registeredStaff.PhoneNumber, 
-		Name: registeredStaff.Name,
+		UserId:      registeredStaff.ID,
+		PhoneNumber: registeredStaff.PhoneNumber,
+		Name:        registeredStaff.Name,
 		AccessToken: token,
 	}
 
@@ -79,36 +79,36 @@ func (u *staffUsecase) Register(dto StaffRegisterDTO) (*StaffRegAndLoginResponse
 
 // Login implements IStaffUsecase.
 func (u *staffUsecase) Login(dto StaffLoginDTO) (*StaffRegAndLoginResponse, *localError.GlobalError) {
-		// Search staff by phone
-		result, errStaff := u.repo.FindByPhone(dto.PhoneNumber)
-		if errStaff != nil {
-			return nil, errStaff
-		}
-	
-		// Compare staff password with stored password
-		err := hasher.CheckPassword(result.Password, dto.Password)
-		if err != nil {
-			return nil, localError.ErrBase(400, "Credential not valid", err)
-		}
+	// Search staff by phone
+	result, errStaff := u.repo.FindByPhone(dto.PhoneNumber)
+	if errStaff != nil {
+		return nil, errStaff
+	}
 
-		tokenData := &localJwt.TokenData{
-			ID: result.ID,
-			Name: result.Name,
-		}
-	
-		// Generate token if no error happened above
-		// Token generated using JWT scheme
-		token, err := localJwt.GenerateToken(*tokenData)
-		if err != nil {
-			return nil, localError.ErrInternalServer(err.Error(), err)
-		}
+	// Compare staff password with stored password
+	err := hasher.CheckPassword(result.Password, dto.Password)
+	if err != nil {
+		return nil, localError.ErrBadRequest("Credential not valid", err)
+	}
 
-		response := StaffRegAndLoginResponse{
-			UserId: result.ID,
-			PhoneNumber: result.PhoneNumber, 
-			Name: result.Name,
-			AccessToken: token,
-		}
-	
-		return &response, nil
+	tokenData := &localJwt.TokenData{
+		ID:   result.ID,
+		Name: result.Name,
+	}
+
+	// Generate token if no error happened above
+	// Token generated using JWT scheme
+	token, err := localJwt.GenerateToken(*tokenData)
+	if err != nil {
+		return nil, localError.ErrInternalServer(err.Error(), err)
+	}
+
+	response := StaffRegAndLoginResponse{
+		UserId:      result.ID,
+		PhoneNumber: result.PhoneNumber,
+		Name:        result.Name,
+		AccessToken: token,
+	}
+
+	return &response, nil
 }

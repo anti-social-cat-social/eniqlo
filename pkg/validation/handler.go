@@ -1,10 +1,11 @@
 package validation
 
 import (
+	localError "eniqlo/pkg/error"
+	"errors"
 	"log"
 	"regexp"
 	"strings"
-	"errors"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -85,11 +86,13 @@ func getErrorMsg(fe validator.FieldError) string {
 		return "must have a length of " + ToCamelCase(fe.Param()) + "!"
 	case "uuid":
 		return "not a valid UUID!"
+	case "url":
+		return "must be a valid URL!"
 	}
 	return "something is wrong with this field!"
 }
 
-func FormatValidation(err error) interface{} {
+func FormatValidation(err error) *localError.GlobalError {
 	var result []ErrorMsg
 
 	var ve validator.ValidationErrors
@@ -99,10 +102,10 @@ func FormatValidation(err error) interface{} {
 		}
 	}
 	if len(result) == 0 {
-		return "request body cannot be empty!"
+		localError.ErrBadRequest("request body cannot be empty!", nil)
 	}
 
-	return result
+	return localError.ErrBadRequest(result, nil)
 }
 
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
@@ -116,4 +119,10 @@ func ToSnakeCase(str string) string {
 
 func ToCamelCase(str string) string {
 	return strings.ToLower(str[:1]) + str[1:]
+}
+
+func IsValidURL(url string) bool {
+	pattern := `^(http|https)://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/\S*)?$`
+	match, _ := regexp.MatchString(pattern, url)
+	return match
 }
