@@ -7,6 +7,7 @@ import (
 
 type IProductUsecase interface {
 	CreateProduct(req CreateProductRequest) (*Product, *localError.GlobalError)
+	FindProducts(query QueryParams) ([]Product, *localError.GlobalError)
 }
 
 type productUsecase struct {
@@ -17,6 +18,15 @@ func NewProductUsecase(repo IProductRepository) IProductUsecase {
 	return &productUsecase{
 		repo: repo,
 	}
+}
+
+func (uc *productUsecase) FindProducts(query QueryParams) ([]Product, *localError.GlobalError) {
+	products, err := uc.repo.FindAll(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return products, nil
 }
 
 func (uc *productUsecase) CreateProduct(req CreateProductRequest) (*Product, *localError.GlobalError) {
