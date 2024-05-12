@@ -50,3 +50,27 @@ func FormatCreateProductResponse(product Product) CreateProductResponse {
 		CreatedAt: product.CreatedAt.Format("2006-01-02 15:04:05"),
 	}
 }
+
+type ProductFilter struct {
+	Limit    int             `form:"id default=5"`
+	Offset   int             `form:"offset default=0"`
+	Name     string          `form:"name" json:"name"`
+	Category ProductCategory `form:"category"`
+	Sku      string          `form:"sku"`
+	Price    SortBy          `form:"price"`
+	InStock  InStockEnum     `form:"inStock"`
+}
+
+type InStockEnum string
+
+const (
+	True  InStockEnum = "true"
+	False InStockEnum = "false"
+)
+
+type SortBy string
+
+const (
+	PriceAsc  SortBy = "asc"
+	PriceDesc SortBy = "desc"
+)

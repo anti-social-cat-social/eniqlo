@@ -8,6 +8,7 @@ import (
 type IProductUsecase interface {
 	CreateProduct(req CreateProductRequest) (*Product, *localError.GlobalError)
 	DeleteProduct(id string, userId string) *localError.GlobalError
+	GetPublicProducts(filter ProductFilter) ([]Product, *localError.GlobalError)
 }
 
 type productUsecase struct {
@@ -67,4 +68,13 @@ func (uc *productUsecase) DeleteProduct(id string, userId string) *localError.Gl
 	}
 
 	return nil
+}
+
+func (uc *productUsecase) GetPublicProducts(filter ProductFilter) ([]Product, *localError.GlobalError) {
+	products, err := uc.repo.FindAll(filter)
+	if err != nil {
+		return nil, err
+	}
+
+	return products, nil
 }
