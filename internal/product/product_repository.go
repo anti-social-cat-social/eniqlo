@@ -6,6 +6,9 @@ import (
 	"errors"
 	"fmt"
 
+	"strconv"
+	"strings"
+
 	"github.com/jmoiron/sqlx"
 )
 
@@ -15,6 +18,7 @@ type IProductRepository interface {
 	FindAll(params QueryParams) ([]Product, *localError.GlobalError)
 	FindByID(id string) (Product, *localError.GlobalError)
 	DeleteProduct(id string) *localError.GlobalError
+	FindAll(filter ProductFilter) ([]Product, *localError.GlobalError)
 }
 
 type productRepository struct {
@@ -156,4 +160,54 @@ func (r *productRepository) DeleteProduct(id string) *localError.GlobalError {
 	}
 
 	return nil
+}
+
+func (r *productRepository) FindAll(filter ProductFilter) ([]Product, *localError.GlobalError) {
+	products := []Product{}
+	query := "SELECT * FROM products WHERE 1 = 1"
+	args := []interface{}{}
+
+	if filter.Name != "" {
+		query += " AND lower(name) LIKE $1"
+		args = append(args, "%"+strings.ToLower(filter.Name)+"%")
+	}
+
+	if filter.Category != "" {
+		switch filter.Category {
+		case "Clothing", "Accessories", "Footwear", "Beverages":
+			query += " AND category = $" + strconv.Itoa(len(args)+1)
+			args = append(args, filter.Category)
+		}
+	}
+
+	if filter.Sku != "" {
+		query += " AND sku = $" + strconv.Itoa(len(args)+1)
+		args = append(args, filter.Sku)
+	}
+
+	if filter.InStock != "" {
+		switch filter.InStock {
+		case "true":
+			query += " AND stock > 0"
+		case "false":
+			query += " AND stock = 0"
+		}
+	}
+
+	switch filter.Price {
+	case "asc":
+		query += " ORDER BY price ASC"
+	case "desc":
+		query += " ORDER BY price DESC"
+	}
+
+	query += " LIMIT $" + strconv.Itoa(len(args)+1) + " OFFSET $" + strconv.Itoa(len(args)+2)
+	args = append(args, filter.Limit, filter.Offset)
+
+	err := r.db.Select(&products, query, args...)
+	if err != nil {
+		return products, localError.ErrInternalServer("Failed to get products", err)
+	}
+
+	return products, nil
 }

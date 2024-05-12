@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -125,4 +126,9 @@ func IsValidURL(url string) bool {
 	pattern := `^(http|https)://[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}(\/\S*)?$`
 	match, _ := regexp.MatchString(pattern, url)
 	return match
+}
+
+func ParseInt(value string) int {
+	intValue, _ := strconv.Atoi(value)
+	return intValue
 }
