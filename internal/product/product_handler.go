@@ -25,8 +25,26 @@ func (h *productHandler) Router(r *gin.RouterGroup) {
 	group.Use(middleware.UseJwtAuth)
 
 	group.POST("", h.CreateProduct)
+	group.GET("", h.FindAll)
 	group.DELETE("/:id", h.DeleteProduct)
 	group.GET("/customer", h.GetPublicProductHandler)
+}
+
+func (h *productHandler) FindAll(c *gin.Context) {
+	query := QueryParams{}
+	if err := c.ShouldBindQuery(&query); err != nil {
+		res := validation.FormatValidation(err)
+		response.GenerateResponse(c, res.Code, response.WithMessage(res.Message))
+		return
+	}
+
+	products, err := h.uc.FindProducts(query)
+	if err != nil {
+		response.GenerateResponse(c, err.Code, response.WithMessage(err.Message))
+		return
+	}
+
+	response.GenerateResponse(c, http.StatusOK, response.WithMessage("Product fetched successfully!"), response.WithData(products))
 }
 
 func (h *productHandler) CreateProduct(c *gin.Context) {

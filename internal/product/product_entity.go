@@ -5,17 +5,17 @@ import (
 )
 
 type Product struct {
-	ID          string `json:"id" db:"id"`
-	Name        string
-	SKU         string
-	Category    ProductCategory
-	ImageURL    string `db:"image_url"`
-	Notes       string
-	Price       float64
-	Stock       int
-	Location    string
-	IsAvailable bool      `db:"is_available"`
-	CreatedAt   time.Time `db:"created_at"`
+	ID          string 			`json:"id" db:"id"`
+	Name        string 			`json:"name"`
+	SKU         string 			`json:"sku"`
+	Category    ProductCategory `json:"category"`
+	ImageURL    string 			`json:"imageUrl" db:"image_url"`
+	Notes       string 			`json:"notes"`
+	Price       float64 		`json:"price"`
+	Stock       int 			`json:"stock"`
+	Location    string 			`json:"location"`
+	IsAvailable bool 			`json:"isAvailable" db:"is_available"`
+	CreatedAt   time.Time 		`json:"createdAt" db:"created_at"`
 }
 
 type ProductCategory string
@@ -49,6 +49,19 @@ func FormatCreateProductResponse(product Product) CreateProductResponse {
 		ID:        product.ID,
 		CreatedAt: product.CreatedAt.Format("2006-01-02 15:04:05"),
 	}
+}
+
+type QueryParams struct {
+	ID			string 	`form:"id"`
+	Limit       int    	`form:"limit"`
+	Offset      int    	`form:"offset"`
+	Name        string 	`form:"name"`
+	IsAvailable string 	`form:"isAvailable" binding:"omitempty,oneof=true false"`
+	Category	string	`form:"category" binding:"omitempty,oneof=Clothing Accessories Footwear Beverages"`
+	Sku        	string 	`form:"sku"`
+	Price 		string	`form:"price" binding:"omitempty,oneof=asc desc"`
+	InStock 	string 	`form:"inStock" binding:"omitempty,oneof=true false"`
+	CreatedAt 	string	`form:"createdAt" binding:"omitempty,oneof=asc desc"`
 }
 
 type ProductFilter struct {

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	localError "eniqlo/pkg/error"
 	"errors"
+	"fmt"
 
 	"strconv"
 	"strings"
@@ -14,6 +15,7 @@ import (
 type IProductRepository interface {
 	FindBySku(sku string) (Product, *localError.GlobalError)
 	CreateProduct(req CreateProductRequest) *localError.GlobalError
+	FindAllProduct(params QueryParams) ([]Product, *localError.GlobalError)
 	FindByID(id string) (Product, *localError.GlobalError)
 	DeleteProduct(id string) *localError.GlobalError
 	FindAll(filter ProductFilter) ([]Product, *localError.GlobalError)
@@ -27,6 +29,94 @@ func NewProductRepository(db *sqlx.DB) IProductRepository {
 	return &productRepository{
 		db: db,
 	}
+}
+
+func (r *productRepository) FindAllProduct(params QueryParams) ([]Product, *localError.GlobalError) {
+	products := []Product{}
+
+	query := "SELECT * FROM products"
+	nwhere := 0
+
+	if params.ID != "" {
+		nwhere += 1
+		query += fmt.Sprintf(" WHERE id = '%s'", params.ID)
+	}
+
+	if params.Name != "" {
+		prefix := "WHERE"
+		if nwhere > 0 {
+			prefix = "AND"
+		}
+		nwhere += 1
+		query += fmt.Sprintf(" %s name ILIKE '%%%s%%'", prefix, params.Name)
+	}
+
+	if params.IsAvailable == "true" || params.IsAvailable == "false" {
+		prefix := "WHERE"
+		if nwhere > 0 {
+			prefix = "AND"
+		}
+		nwhere += 1
+		query += fmt.Sprintf(" %s is_available = %s", prefix, params.IsAvailable)
+	}
+
+	if params.Category == "Clothing" || params.Category == "Accessories" || params.Category == "Footwear" || params.Category == "Beverages" {
+		prefix := "WHERE"
+		if nwhere > 0 {
+			prefix = "AND"
+		}
+		nwhere += 1
+		query += fmt.Sprintf(" %s category = '%s'", prefix, params.Category)
+	}
+
+	if params.Sku != "" {
+		prefix := "WHERE"
+		if nwhere > 0 {
+			prefix = "AND"
+		}
+		nwhere += 1
+		query += fmt.Sprintf(" %s sku = '%s'", prefix, params.Sku)
+	}
+
+	if params.InStock == "true" {
+		prefix := "WHERE"
+		if nwhere > 0 {
+			prefix = "AND"
+		}
+		nwhere += 1
+		query += fmt.Sprintf(" %s stock > 0", prefix)
+	} else if params.InStock == "false" {
+		prefix := "WHERE"
+		if nwhere > 0 {
+			prefix = "AND"
+		}
+		nwhere += 1
+		query += fmt.Sprintf(" %s stock = 0", prefix)
+	}
+
+	if params.Price == "asc" || params.Price == "desc" {
+		query += fmt.Sprintf(" ORDER BY price %s", params.Price)
+	} else if params.CreatedAt == "asc" || params.CreatedAt == "desc" {
+		query += fmt.Sprintf(" ORDER BY created_at %s", params.CreatedAt)
+	}
+
+	if params.Limit != 0 {
+		query += fmt.Sprintf(" LIMIT %d", params.Limit)
+	} else {
+		query += " LIMIT 5"
+	}
+	if params.Offset != 0 {
+		query += fmt.Sprintf(" OFFSET %d", params.Offset)
+	} else {
+		query += " OFFSET 0"
+	}
+
+	err := r.db.Select(&products, query)
+	if err != nil {
+		return products, localError.ErrInternalServer("Failed to find customers", err)
+	}
+
+	return products, nil
 }
 
 func (r *productRepository) FindBySku(sku string) (Product, *localError.GlobalError) {
