@@ -4,6 +4,7 @@ import (
 	"eniqlo/internal/customer"
 	"eniqlo/internal/product"
 	"eniqlo/internal/staff"
+	"eniqlo/internal/customer"
 	"eniqlo/pkg/response"
 	"net/http"
 
@@ -19,6 +20,7 @@ func NewRoute(engine *gin.Engine, db *sqlx.DB) {
 	router.GET("ping", pingHandler)
 
 	initializeStaffHandler(db, router)
+	initializeCustomerHandler(db, router)
 }
 
 func initializeStaffHandler(db *sqlx.DB, router *gin.RouterGroup) {
@@ -37,6 +39,15 @@ func initializeStaffHandler(db *sqlx.DB, router *gin.RouterGroup) {
 
 	staffH.Router(router)
 	productH.Router(router)
+	customerH.Router(router)
+}
+
+func initializeCustomerHandler(db *sqlx.DB, router *gin.RouterGroup) {
+	// Initialize all necessary dependecies
+	customerRepo := customer.NewCustomerRepository(db)
+	customerUc := customer.NewCustomerUsecase(customerRepo)
+	customerH := customer.NewCustomerHandler(customerUc)
+
 	customerH.Router(router)
 }
 
