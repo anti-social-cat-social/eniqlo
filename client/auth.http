@@ -1,0 +1,18 @@
+### Register
+POST http://localhost:8080/v1/staff/register HTTP/1.1
+content-type: application/json
+
+{
+    "phoneNumber": "+628123123123",
+    "name": "john doe",
+    "password": "password"
+}
+
+### Login
+POST http://localhost:8080/v1/staff/login HTTP/1.1
+content-type: application/json
+
+{
+    "phoneNumber": "+628123123123",
+    "password": "password"
+}

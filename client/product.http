@@ -1,0 +1,15 @@
+POST http://localhost:8080/v1/product HTTP/1.1
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVdWlkIjoiNjljOTM5ZmQtNDhiZC00MGM5LTk2ZDEtMWY2YzUxYzVmZWQ1IiwiaXNzIjoiRW5pUWlsbyIsInN1YiI6ImpvaG4gZG9lIiwiZXhwIjoxNzE1NDk4MjEwLCJpYXQiOjE3MTU0Njk0MTAsImp0aSI6IjY5YzkzOWZkLTQ4YmQtNDBjOS05NmQxLTFmNmM1MWM1ZmVkNSJ9.tNPK-Aq3bhykkrq3z0lnjEuXnvqDIZOIi6vown3iaEY
+
+{
+    "name": "Botol",
+	"sku": "Botol-mrh-037",
+	"category": "Accessories",
+	"imageUrl": "https://smn.newfemme.co/uploads/user_products/1701617343_494c90d6737f4c0c1a96.jpg",
+	"notes":"mantap",
+	"price":75000,
+	"stock": 99,
+	"location": "Jakarta",
+	"isAvailable": true
+}
