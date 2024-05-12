@@ -25,6 +25,7 @@ func (h *productHandler) Router(r *gin.RouterGroup) {
 	group.Use(middleware.UseJwtAuth)
 
 	group.POST("", h.CreateProduct)
+	group.DELETE("/:id", h.DeleteProduct)
 }
 
 func (h *productHandler) CreateProduct(c *gin.Context) {
@@ -45,4 +46,18 @@ func (h *productHandler) CreateProduct(c *gin.Context) {
 	res := FormatCreateProductResponse(*product)
 
 	response.GenerateResponse(c, http.StatusCreated, response.WithMessage("Product created successfully!"), response.WithData(res))
+}
+
+func (h *productHandler) DeleteProduct(c *gin.Context) {
+	id := c.Param("id")
+
+	userId := c.MustGet("userID").(string)
+
+	if err := h.uc.DeleteProduct(id, userId); err != nil {
+		response.GenerateResponse(c, err.Code, response.WithMessage(err.Message))
+		c.Abort()
+		return
+	}
+
+	response.GenerateResponse(c, http.StatusOK, response.WithMessage("success"))
 }
