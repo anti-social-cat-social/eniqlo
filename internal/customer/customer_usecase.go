@@ -8,7 +8,8 @@ import (
 )
 
 type ICustomerUsecase interface {
-	Register(dto CustomerRegisterDTO) (*CustomerRegisterResponse, *localError.GlobalError)
+	FindCustomers(query QueryParams) ([]Customer, *localError.GlobalError)
+	Register(dto CustomerRegisterDTO) (*CustomerResponse, *localError.GlobalError)
 }
 
 type customerUsecase struct {
@@ -21,8 +22,17 @@ func NewCustomerUsecase(repo ICustomerRepository) ICustomerUsecase {
 	}
 }
 
+func (uc *customerUsecase) FindCustomers(query QueryParams) ([]Customer, *localError.GlobalError) {
+	customers, err := uc.repo.FindAll(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return customers, nil
+}
+
 // Register implements ICustomerUsecase.
-func (u *customerUsecase) Register(dto CustomerRegisterDTO) (*CustomerRegisterResponse, *localError.GlobalError) {
+func (u *customerUsecase) Register(dto CustomerRegisterDTO) (*CustomerResponse, *localError.GlobalError) {
 	// Validate customer request first
 
 	// Check if customer with given phone is already exists
@@ -34,8 +44,8 @@ func (u *customerUsecase) Register(dto CustomerRegisterDTO) (*CustomerRegisterRe
 	// Map DTO to customer entity
 	// This used for storing data to database
 	customer := Customer{
-		ID: uuid.NewString(),
-		Name:  dto.Name,
+		ID:          uuid.NewString(),
+		Name:        dto.Name,
 		PhoneNumber: dto.PhoneNumber,
 	}
 
@@ -44,10 +54,10 @@ func (u *customerUsecase) Register(dto CustomerRegisterDTO) (*CustomerRegisterRe
 		return nil, err
 	}
 
-	response := CustomerRegisterResponse{
-		UserId: registeredCustomer.ID,
-		PhoneNumber: registeredCustomer.PhoneNumber, 
-		Name: registeredCustomer.Name,
+	response := CustomerResponse{
+		UserId:      registeredCustomer.ID,
+		PhoneNumber: registeredCustomer.PhoneNumber,
+		Name:        registeredCustomer.Name,
 	}
 
 	return &response, nil

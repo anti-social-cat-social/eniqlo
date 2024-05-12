@@ -1,12 +1,13 @@
 package customer
 
 import (
+	"eniqlo/internal/middleware"
 	"eniqlo/pkg/response"
 	"eniqlo/pkg/validation"
-	"eniqlo/internal/middleware"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/go-playground/validator/v10"
 )
 
@@ -25,11 +26,31 @@ func NewCustomerHandler(uc ICustomerUsecase) *customerHandler {
 func (h *customerHandler) Router(r *gin.RouterGroup) {
 	// Grouping to give URL prefix
 	group := r.Group("customer")
-	
+
 	group.Use(middleware.UseJwtAuth)
 
 	// Utillize group to use global setting on group parent (if exists)
+	group.GET("", h.FindAll)
 	group.POST("register", h.register)
+}
+
+func (h *customerHandler) FindAll(c *gin.Context) {
+	query := QueryParams{}
+	if err := c.ShouldBindQuery(&query); err != nil {
+		res := validation.FormatValidation(err)
+		response.GenerateResponse(c, res.Code, response.WithMessage(res.Message))
+		return
+	}
+
+	customers, err := h.uc.FindCustomers(query)
+	if err != nil {
+		response.GenerateResponse(c, err.Code, response.WithMessage(err.Message))
+		return
+	}
+
+	res := FormatCustomersResponse(customers)
+
+	response.GenerateResponse(c, http.StatusOK, response.WithMessage("Customer fetched successfully!"), response.WithData(res))
 }
 
 func (h *customerHandler) register(ctx *gin.Context) {
